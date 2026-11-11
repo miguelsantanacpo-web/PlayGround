@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>Atomic Air Defense</title>
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' fill='%23020b08'/%3E%3Cpath d='M32 8 56 52H8z' fill='none' stroke='%2369ffb2' stroke-width='4'/%3E%3Ccircle cx='32' cy='38' r='6' fill='%2369ffb2'/%3E%3C/svg%3E" />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="hud">
+      <div class="brand-wrap">
+        <span class="brand">ATOMIC AIR DEFENSE</span>
+      </div>
+      <div class="stats">
+        <div class="stat"><span class="label">SCORE</span><span id="score">0</span></div>
+        <div class="stat"><span class="label">WAVE</span><span id="wave">1</span></div>
+        <div class="stat"><span class="label">CITIES</span><span id="cities">6</span></div>
+        <div class="stat"><span class="label">BATTERY</span><span id="battery">18</span></div>
+      </div>
+    </div>
+
+    <canvas id="gameCanvas"></canvas>
+
+    <div id="startOverlay" class="overlay visible">
+      <div class="panel">
+        <p class="eyebrow">Nuclear defense network</p>
+        <h1>ATOMIC AIR DEFENSE</h1>
+        <p>
+          Defend cities from Chinese bombers and Russian missiles. Click or tap to fire green interceptors.
+        </p>
+        <ul>
+          <li>Las Vegas</li>
+          <li>New York</li>
+          <li>Los Angeles</li>
+          <li>São Paulo</li>
+          <li>Curitiba</li>
+          <li>Rio de Janeiro</li>
+        </ul>
+        <button id="startButton">Deploy defenses</button>
+      </div>
+    </div>
+
+    <div id="gameOverOverlay" class="overlay hidden">
+      <div class="panel">
+        <p class="eyebrow">Defense grid compromised</p>
+        <h2>City line lost</h2>
+        <p>Final score: <span id="finalScore">0</span></p>
+        <button id="restartButton">Redeploy</button>
+      </div>
+    </div>
+
+    <script src="script.js"></script>
+  </body>
+</html>
