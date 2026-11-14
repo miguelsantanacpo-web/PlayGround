@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+  <meta name="theme-color" content="#101338">
+  <title>Neon Defense — City Under Stars</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;700;800;900&family=Press+Start+2P&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main class="game-shell">
+    <header class="topbar">
+      <a class="brand" href="#" aria-label="Neon Defense home"><span class="brand-mark">✦</span><span>STAR<span class="brand-light">GUARD</span></span></a>
+      <div class="top-note"><span class="live-dot"></span> CITY DEFENSE NETWORK <span class="note-divider">/</span> SECTOR 07</div>
+      <div class="top-actions"><button class="icon-button" id="soundBtn" aria-label="Toggle sound" title="Toggle sound">♫</button><button class="icon-button" id="pauseBtn" aria-label="Pause game" title="Pause">Ⅱ</button></div>
+    </header>
+
+    <section class="game-layout" aria-label="Missile defense game">
+      <div class="game-column">
+        <section class="hud" aria-label="Game status">
+          <div class="hud-card score-card"><span class="hud-label">SCORE</span><strong id="score">000000</strong><span class="hud-icon">✦</span></div>
+          <div class="hud-card wave-card"><span class="hud-label">WAVE</span><strong id="wave">01</strong><span class="wave-name" id="waveName">WARM UP</span></div>
+          <div class="hud-card cities-card"><span class="hud-label">CITIES</span><div class="city-lives" id="cityLives" aria-label="Six cities remaining"></div></div>
+          <div class="hud-card ammo-card"><span class="hud-label">BATTERIES</span><div class="battery-pips" id="batteryPips"></div></div>
+        </section>
+
+        <div class="canvas-frame" id="canvasFrame">
+          <canvas id="gameCanvas" aria-label="Game area. Tap or click above incoming missiles to launch a defensive burst."></canvas>
+          <div class="frame-top"><span>◉ LIVE FEED</span><span id="statusText">SYSTEM READY</span></div>
+          <div class="canvas-vignette"></div>
+          <div class="overlay" id="startOverlay">
+            <div class="overlay-card intro-card">
+              <div class="orbit-badge"><span>✦</span><i></i><b></b></div>
+              <p class="eyebrow">A LITTLE SPARK GOES A LONG WAY</p>
+              <h1>NEON<br><em>DEFENSE</em></h1>
+              <p class="intro-copy">The night is bright. Keep it that way.<br>Protect your city, one burst at a time.</p>
+              <button class="play-button" id="playBtn"><span>▶</span> START DEFENDING</button>
+              <div class="how-to"><span class="mouse-icon">⌖</span> TAP ANYWHERE TO FIRE <i>•</i> KEEP YOUR CITIES GLOWING</div>
+            </div>
+          </div>
+          <div class="overlay hidden" id="pauseOverlay">
+            <div class="overlay-card small-overlay"><div class="pause-symbol">Ⅱ</div><p class="eyebrow">TAKE A BREATHER</p><h2>PAUSED</h2><button class="play-button" id="resumeBtn">▶ &nbsp; BACK TO IT</button></div>
+          </div>
+          <div class="overlay hidden" id="gameOverOverlay">
+            <div class="overlay-card small-overlay"><div class="gameover-symbol">✦</div><p class="eyebrow">THE CITY WILL REMEMBER</p><h2>GAME OVER</h2><p class="final-score">FINAL SCORE <strong id="finalScore">000000</strong></p><button class="play-button" id="restartBtn">↻ &nbsp; TRY AGAIN</button></div>
+          </div>
+          <div class="toast" id="toast" aria-live="polite"></div>
+        </div>
+        <div class="under-game"><span><b class="keycap">CLICK</b> OR <b class="keycap">TAP</b> TO LAUNCH A DEFENSE BURST</span><span class="tip"><span>✦</span> Pro tip: lead the missiles!</span></div>
+      </div>
+
+      <aside class="side-panel">
+        <div class="panel-kicker"><span class="kicker-star">✦</span> YOUR MISSION</div>
+        <h2>Hold the<br><span>horizon.</span></h2>
+        <p class="mission-copy">Intercept the incoming missiles before they reach your city. Every burst is a little pocket of starlight.</p>
+        <div class="mission-rule"></div>
+        <div class="stat-row"><span class="stat-icon pink-icon">✦</span><div><b>ONE TAP</b><small>One beautiful burst</small></div></div>
+        <div class="stat-row"><span class="stat-icon blue-icon">⌁</span><div><b>THREE BATTERIES</b><small>Choose your launch point</small></div></div>
+        <div class="stat-row"><span class="stat-icon gold-icon">♥</span><div><b>NO CITY LEFT BEHIND</b><small>Save as many as you can</small></div></div>
+        <div class="best-score"><div><span>PERSONAL BEST</span><strong id="bestScore">000000</strong></div><div class="best-cup">★</div></div>
+        <div class="panel-footer"><span class="footer-orbit">✦</span> MADE OF STARDUST <span class="footer-orbit">✦</span></div>
+      </aside>
+    </section>
+    <footer class="page-footer"><span>© STAR GUARD DEFENSE CORPS</span><span class="footer-center"><i></i> ALL SYSTEMS OPERATIONAL</span><span>STAY BRIGHT, CITY 07 <b>♥</b></span></footer>
+  </main>
+  <script src="game.js"></script>
+</body>
+</html>
