@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+  <meta name="theme-color" content="#102b41" />
+  <title>Fruit Slice 3D</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ctext y='.9em' font-size='56'%3E%F0%9F%8D%89%3C/text%3E%3C/svg%3E" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Nunito:wght@600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <main id="game-shell">
+    <canvas id="game-canvas" aria-label="Fruit Slice 3D game"></canvas>
+    <div class="shade"></div>
+    <header class="topbar">
+      <div class="brand-mark"><span class="brand-fruit">✦</span> FRUIT SLICE <small>3D</small></div>
+      <button id="sound-toggle" class="icon-btn" aria-label="Toggle sound">♫</button>
+    </header>
+    <section id="hud" class="hud hidden">
+      <div class="score-label">SCORE <strong id="score">0</strong></div>
+      <div id="lives" class="lives" aria-label="Lives remaining">♥ ♥ ♥</div>
+      <button id="pause-button" class="icon-btn pause-btn" aria-label="Pause">Ⅱ</button>
+    </section>
+    <div id="combo" class="combo hidden"></div>
+    <div id="trail-layer" aria-hidden="true"></div>
+
+    <section id="menu-screen" class="screen menu-screen">
+      <div class="floating-tag">A juicy little arcade classic</div>
+      <h1 class="logo">FRUIT<br><span>SLICE</span><em>3D</em></h1>
+      <p class="tagline">Swipe. Slice. Score!</p>
+      <div class="menu-buttons">
+        <button class="wood-button primary" id="play-button">PLAY <span>▶</span></button>
+        <button class="wood-button" id="settings-button">SETTINGS <span>⚙</span></button>
+        <button class="text-button" id="credits-button">CREDITS</button>
+      </div>
+      <div class="best-pill">PERSONAL BEST <b id="menu-best">0000</b></div>
+      <div class="hint">SWIPE TO SLICE · DON'T LET THEM DROP!</div>
+    </section>
+
+    <section id="settings-screen" class="screen panel-screen hidden">
+      <div class="panel-card">
+        <button class="back-button" data-back="menu-screen">← BACK</button>
+        <h2>SETTINGS</h2>
+        <p class="panel-subtitle">Make it your kind of juicy.</p>
+        <label class="setting-row"><span>Master volume</span><input id="master-volume" type="range" min="0" max="1" step="0.01"><b id="master-value"></b></label>
+        <label class="setting-row"><span>Sound effects</span><input id="sfx-volume" type="range" min="0" max="1" step="0.01"><b id="sfx-value"></b></label>
+        <label class="setting-row"><span>Background music</span><input id="music-volume" type="range" min="0" max="1" step="0.01"><b id="music-value"></b></label>
+        <label class="setting-row"><span>Fruit brightness</span><input id="brightness" type="range" min="0.7" max="1.35" step="0.01"><b id="brightness-value"></b></label>
+        <button id="music-switch" class="wood-button toggle-button">MUSIC <span>ON</span></button>
+        <p class="tiny-note">Settings are saved automatically on this device.</p>
+      </div>
+    </section>
+
+    <section id="credits-screen" class="screen panel-screen hidden">
+      <div class="panel-card credits-card">
+        <button class="back-button" data-back="menu-screen">← BACK</button>
+        <h2>THE ORCHARD</h2>
+        <p class="panel-subtitle">A little slice of the good old days.</p>
+        <div class="fruit-roster">🍎 <span>Apples</span> · 🍑 <span>Peaches</span> · 🥭 <span>Mangoes</span><br>🍊 <span>Tangerines</span> · 🍉 <span>Watermelons</span><br>🐉 <span>Dragon fruit</span> · 🍈 <span>Jackfruit</span></div>
+        <p>Made with love, a few pixels of nostalgia, and a whole lot of fruit.</p>
+        <button class="wood-button" data-back="menu-screen">SWEET! <span>✦</span></button>
+      </div>
+    </section>
+
+    <section id="pause-screen" class="screen panel-screen hidden">
+      <div class="panel-card compact-card">
+        <div class="pause-stamp">TIME OUT!</div>
+        <h2>PAUSED</h2>
+        <button class="wood-button primary" id="resume-button">RESUME <span>▶</span></button>
+        <button class="wood-button" id="restart-button">RESTART <span>↻</span></button>
+        <button class="text-button" data-menu>MAIN MENU</button>
+      </div>
+    </section>
+
+    <section id="gameover-screen" class="screen panel-screen hidden">
+      <div class="panel-card compact-card gameover-card">
+        <div class="pause-stamp">NICE SLICING!</div>
+        <h2>ROUND OVER</h2>
+        <div class="final-score-label">YOUR SCORE <strong id="final-score">0</strong></div>
+        <div class="best-score-line">PERSONAL BEST <b id="final-best">0</b></div>
+        <button class="wood-button primary" id="again-button">PLAY AGAIN <span>▶</span></button>
+        <button class="text-button" data-menu>MAIN MENU</button>
+      </div>
+    </section>
+    <div id="toast" class="toast hidden"></div>
+  </main>
+  <script type="module" src="game.js"></script>
+</body>
+</html>
