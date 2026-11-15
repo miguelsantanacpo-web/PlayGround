@@ -167,7 +167,6 @@ jobs:
       RALPH_REQUEST: ${{ contains(needs.prepare.outputs.labels_json, '"ralph"') }}
       OMO_REQUEST: ${{ contains(needs.prepare.outputs.labels_json, '"omo"') }}
       SSH_ONLY_REQUEST: ${{ contains(needs.prepare.outputs.labels_json, '"ssh"') }}
-      WARP_REQUEST: ${{ contains(needs.prepare.outputs.labels_json, '"warp"') }}
       VALIDATION_ENABLED: ${{ vars.VALIDATION_ENABLED || 'true' }}
     steps:
       - name: Record job start time
@@ -768,54 +767,23 @@ jobs:
           if bash "$RUNTIME_DIR/scripts/device-proxy.sh" "$RUNNER_TEMP/device-proxy" "$OPENCODE_BIN" "$OPENCODE_WEB_DIR" \
             && DEVICE_PROXY="$(cat "$RUNNER_TEMP/device-proxy/proxy-url" 2>/dev/null)" && [[ "$DEVICE_PROXY" == http://127.0.0.1:* ]]; then
             echo "Device relay ready (opencode.ai + openrouter.ai; models.opencode.ai stays off the phone)"
-            echo "- Device relay: on (phone for opencode.ai / openrouter.ai; models.opencode.ai uses WARP/direct)" >> "$GITHUB_STEP_SUMMARY"
+            echo "- Device relay: on (phone for opencode.ai / openrouter.ai; models.opencode.ai goes direct)" >> "$GITHUB_STEP_SUMMARY"
           else
             DEVICE_PROXY=''
           fi
-          # Admin routing toggles (Enable WARP, Skip direct OpenCode) plus per-user WARP label.
-          # Default with Fusion skips WARP; admin Enable WARP overrides. Admin Skip direct
-          # removes free model calls (SKIP_DIRECT_OC=1 exported to env if set).
-          # Still set up WARP when the phone is up — models.opencode.ai needs that path.
-          fusion_on=false
-          [[ "${plugin_commit:-}" =~ ^[a-f0-9]{40}$ ]] && fusion_on=true
-          WARP_DECISION="$(node "$RUNTIME_DIR/scripts/warp-decision.mjs" "$WARP_REQUEST" "$fusion_on" "$LABELS_JSON" 2>/dev/null || echo off)"
-          echo "WARP decision: $WARP_DECISION (requested=$WARP_REQUEST, fusion=$fusion_on)"
-          if [[ "$WARP_DECISION" == 'skip' ]]; then
-            echo "- WARP: skipped for Default because Fusion runs first (set up lazily before a free model)" >> "$GITHUB_STEP_SUMMARY"
-            echo "WARP_LAZY=1" >> "$GITHUB_ENV"
-          fi
-          if [[ "$WARP_DECISION" == 'on' ]]; then
-            # Free models through Cloudflare WARP IPv6.
-            # Only `opencode serve` gets the proxy; GitHub stays on the runner IP.
-            if GENERAL_PROXY="$(bash "$RUNTIME_DIR/scripts/warp-proxy.sh" "$RUNNER_TEMP/warp" "$OPENCODE_BIN" | tail -n 1)" \
-              && [[ "$GENERAL_PROXY" == http://127.0.0.1:* ]]; then
-              echo "WARP proxy ready: egress $(cat "$RUNNER_TEMP/warp/egress" 2>/dev/null)"
-              echo "- WARP: on, egress \`$(cat "$RUNNER_TEMP/warp/egress" 2>/dev/null)\`" >> "$GITHUB_STEP_SUMMARY"
-            else
-              GENERAL_PROXY=''
-              echo "::warning title=WARP unavailable::WARP failed; OpenCode uses the runner network for non-device hosts."
-              echo "- WARP: requested but unavailable; used the runner network for models.opencode.ai" >> "$GITHUB_STEP_SUMMARY"
-            fi
-          fi
-          # Compose final HTTPS_PROXY for opencode serve.
+          # Compose final HTTPS_PROXY for opencode serve: the phone relay only; models go direct.
           WARP_PROXY=''
           if [[ -n "$DEVICE_PROXY" ]]; then
-            if WARP_PROXY="$(bash "$RUNTIME_DIR/scripts/compose-egress-proxy.sh" "$RUNNER_TEMP/egress-mux" "$DEVICE_PROXY" "$GENERAL_PROXY")" \
+            if WARP_PROXY="$(bash "$RUNTIME_DIR/scripts/compose-egress-proxy.sh" "$RUNNER_TEMP/egress-mux" "$DEVICE_PROXY")" \
               && [[ "$WARP_PROXY" == http://127.0.0.1:* ]]; then
-              echo "Egress mux ready (device + ${GENERAL_PROXY:+general}${GENERAL_PROXY:-direct for models})"
+              echo "Egress mux ready (device + direct for models)"
             else
-              echo "::warning title=Egress mux failed::Falling back to device relay only; models.opencode.ai may fail until WARP/direct path is fixed."
+              echo "::warning title=Egress mux failed::Falling back to device relay only."
               WARP_PROXY="$DEVICE_PROXY"
             fi
-          else
-            WARP_PROXY="$GENERAL_PROXY"
           fi
-          # Admin build stats: record the WARP outcome, then post it right away (best-effort).
+          # Admin build stats: record the start.
           date +%s%3N > "$OPENCODE_WEB_DIR/build-started-at" 2>/dev/null || true
-          WARP_STATUS_SOURCE="$RUNNER_TEMP/warp/status.json" WARP_DECISION="$WARP_DECISION" WARP_READY="$([[ -n "$GENERAL_PROXY" ]] && echo 1)" \
-            node -e 'const fs=require("fs"),e=process.env,d={on:"on",skip:"skipped_fusion"}[e.WARP_DECISION]||"off";let s={};try{s=JSON.parse(fs.readFileSync(e.WARP_STATUS_SOURCE,"utf8"))}catch{}
-              const r=d!=="on"?"not_run":e.WARP_READY?"ok":(["429_fallback","setup_failed"].includes(s.result)?s.result:"setup_failed");
-              fs.writeFileSync(e.OPENCODE_WEB_DIR+"/warp-status.json",JSON.stringify({decision:d,result:r,...(d==="on"?{attempt:s.attempt,egress_prefix:s.egress_prefix,egress_prefix64:s.egress_prefix64,colo:s.colo}:{})}))' 2>/dev/null || true
           timeout 20 node "$RUNTIME_DIR/scripts/run-record.mjs" starting >/dev/null 2>&1 || true
           OPENCODE_BIN="$OPENCODE_BIN" bash "$RUNTIME_DIR/scripts/start-opencode-serve.sh" "$WARP_PROXY"
           wait_for_http() {
@@ -933,7 +901,7 @@ jobs:
               return;
             }
             const { parseIssueRequest } = await import(`${process.env.RUNTIME_DIR}/scripts/issue-request.mjs`);
-            const { modelChain: adminChain } = parseIssueRequest(issueResponse.data);
+            const { modelList } = parseIssueRequest(issueResponse.data);
             const { resolveRunModels } = await import(`${process.env.RUNTIME_DIR}/scripts/run-with-model-fallback.mjs`);
             const fusionEnabled = /^[a-f0-9]{40}$/.test(String(process.env.FUSION_PLUGIN_COMMIT || ''));
             let live = null;
@@ -945,13 +913,13 @@ jobs:
             } catch (error) { core.warning(`OpenCode model catalog unavailable: ${error.message}`); }
             const requireShared = process.env.FUSION_REQUIRE_SHARED === 'true';
             const selected = modelLabels[0]?.slice('model/'.length);
-            const { model, models } = resolveRunModels({ selected, live, fusionEnabled, requireShared, forceSharedTest: process.env.FUSION_FORCE_SHARED_TEST === 'true', route: process.env.FUSION_ROUTE, adminChain: selected ? null : adminChain });
-            if (!selected && adminChain?.length && !requireShared) core.info(`Admin model chain requested: ${adminChain.join(' -> ')}; running ${models.join(' -> ')}`);
+            const { model, models, routes } = resolveRunModels({ selected, live, fusionEnabled, requireShared, forceSharedTest: process.env.FUSION_FORCE_SHARED_TEST === 'true', route: process.env.FUSION_ROUTE, modelList });
             if (requireShared) core.info('Shared Fusion checkout overrides inherited model labels; primary cannot fall back to a free provider.');
             const skills = names.filter((name) => name.startsWith('skill/'))
               .map((name) => name.slice('skill/'.length)).sort();
             core.setOutput('model', model);
             core.setOutput('models_json', JSON.stringify(models));
+            core.setOutput('routes_json', JSON.stringify(routes));
             core.setOutput('variant', ['openai/gpt-6.1-sol', 'openai/gpt-6-astra'].includes(model) ? 'high' : '');
             core.setOutput('skills_json', JSON.stringify(skills));
             core.info(`Resolved model=${model}; fusion=${fusionEnabled}; sequence=${models.join(' → ')}; skills=${skills.join(', ') || '(none)'}`);
@@ -1019,6 +987,7 @@ jobs:
           OPENCODE_WEB_URL: ${{ steps.opencode_web.outputs.url }}
           OPENCODE_MODEL: ${{ steps.opencode_labels.outputs.model }}
           OPENCODE_MODELS_JSON: ${{ steps.opencode_labels.outputs.models_json }}
+          OPENCODE_MODEL_ROUTES_JSON: ${{ steps.opencode_labels.outputs.routes_json }}
           OPENCODE_VARIANT: ${{ steps.opencode_labels.outputs.variant }}
           OPENCODE_SKILLS: ${{ steps.opencode_labels.outputs.skills_json }}
           GOAL_REQUEST: ${{ env.GOAL_REQUEST }}
